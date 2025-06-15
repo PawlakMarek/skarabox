@@ -282,14 +282,28 @@ in
           pname=$name
         '';
         postCreateHook = ''
-          zfs set keylocation="file:///persist/${poolName}_passphrase" $pname;
+          zfs set keylocation="file:///persist/${poolName}_passphrase" $pname
           ${optionalString pool.cache.enable (
-            let
-              cacheCommands = lib.concatStringsSep "\n" (
-                lib.optional pool.cache.l2arc "zpool add $pname cache ${pool.cache.device}" ++
-                lib.optional pool.cache.slog "zpool add $pname log ${pool.cache.device}"
-              );
-            in cacheCommands
+            if pool.cache.l2arc && pool.cache.slog then
+              ''
+              # Create partitions for both cache and log
+              sgdisk --clear ${pool.cache.device}
+              sgdisk --new=1:0:+32G --typecode=1:8300 --change-name=1:slog ${pool.cache.device}
+              sgdisk --new=2:0:0 --typecode=2:8300 --change-name=2:cache ${pool.cache.device}
+              partprobe ${pool.cache.device}
+              udevadm settle
+              zpool add $pname log ${pool.cache.device}-part1
+              zpool add $pname cache ${pool.cache.device}-part2
+              ''
+            else if pool.cache.l2arc then
+              ''
+              zpool add $pname cache ${pool.cache.device}
+              ''
+            else if pool.cache.slog then
+              ''
+              zpool add $pname log ${pool.cache.device}
+              ''
+            else ""
           )};
         '';
         datasets = {
