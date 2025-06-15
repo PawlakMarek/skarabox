@@ -50,10 +50,11 @@ in
 
     dataPool = mkOption {
       description = "ZFS pool to store important data.";
+      default = {};
       type = with types; submodule {
         options = {
           enable = lib.mkEnableOption "the data pool on other hard drives." // {
-            default = true;
+            default = false;
           };
 
           name = mkOption {
@@ -66,12 +67,14 @@ in
             description = "First disk on which to install the data pool.";
             type = types.str;
             example = "/dev/sda";
+            default = "";
           };
 
           disk2 = mkOption {
             description = "Second disk on which to install the data pool.";
             type = types.str;
             example = "/dev/sdb";
+            default = "";
           };
 
           reservation = mkOption {
@@ -88,6 +91,7 @@ in
             '';
             type = types.str;
             example = "1T";
+            default = "100G";
           };
         };
       };
