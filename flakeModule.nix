@@ -361,6 +361,15 @@ in
                 // (optionalAttrs hostCfg.skarabox.disks.dataPool.enable {
                   "data_passphrase" = cfg'.secretsDataPassphrasePath;
                 })
+                // (let
+                  # Generate passphrase entries for dataPools
+                  enabledDataPools = lib.filterAttrs (_: pool: pool.enable) hostCfg.skarabox.disks.dataPools;
+                  mkDataPoolPassphrase = poolName: _: {
+                    "${poolName}_passphrase" = "['${name}']['disks']['${poolName}Passphrase']";
+                  };
+                in
+                lib.concatMapAttrs mkDataPoolPassphrase enabledDataPools
+                )
                 // cfg'.extraSecretsPassphrasesPath;
 
               diskEncryptionOptions = let
