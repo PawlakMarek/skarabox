@@ -177,7 +177,7 @@ in
                 options = mkOption {
                   description = "ZFS dataset options.";
                   type = with types; attrsOf str;
-                  default = { mountpoint = "legacy" };
+                  default = { mountpoint = "legacy"; };
                 };
               };
             });
